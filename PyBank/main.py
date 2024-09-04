@@ -1,34 +1,33 @@
 import os
 import csv
 
-# Construct the file path for the input CSV
-#csvpath = os.path.join('..', 'Resources', 'budget_data.csv')
-csvpath = os.path.join(os.environ['USERPROFILE'], 'OneDrive - Tyson Online', 'Desktop', 'Learning Courses', 
-    'Rutgers Bootcamp', 'Week 3', 'Challenge 3 data', 'PyBank', 'Resources', 'budget_data.csv')
+# File path for the input CSV
+csvpath = os.path.join('Resources', 'budget_data.csv')
 
-# Construct the file path for the output CSV
-#output_file = os.path.join("financial_analysis_output.txt")
-output_file = os.path.join(os.environ['USERPROFILE'],'OneDrive - Tyson Online', 'Desktop', 'Learning Courses', 'Rutgers Bootcamp', 
-    'Week 3', 'Challenge 3 work', 'python-challenge', 'PyBank', 'analysis', 'financial_analysis_output.txt')
+# File path for the output CSV
+output_file = os.path.join("analysis", "financial_analysis_output.txt")
 
 # Initialize variables
 total_months = 0
 total_profit_losses = 0
 previous_value = None
 changes = []
-greatest_increase = {"date": None, "amount": float('-inf')}  # Initialize with negative infinity
-greatest_decrease = {"date": None, "amount": float('inf')}    # Initialize with positive infinity
+greatest_increase = {"date": None, "amount": 0}  # Start with 0
+greatest_decrease = {"date": None, "amount": 0}    # Start with 0
 
 # Open and read the CSV file
 with open(csvpath, mode='r') as file:
     csvreader = csv.reader(file)
     
-    # Skip the header if there is one
-    header = next(csvreader)  # Assuming the first row is the header
+    # First row is the header
+    header = next(csvreader) 
 
+    # Initialize variables for the first comparison
+    first_row = True
+    
     # Loop through the rows to calculate totals and changes
     for row in csvreader:
-        # Extract the current "Profit/Losses" value (assuming it's in the second column, index 1)
+        # Extract the current "Profit/Losses" value from the second column
         current_value = int(row[1])
         
         # Update total months and total profits/losses
@@ -39,6 +38,14 @@ with open(csvpath, mode='r') as file:
         if previous_value is not None:
             change = current_value - previous_value
             changes.append(change)
+            
+            # Initialize greatest increase and decrease based on the first change
+            if first_row:
+                greatest_increase["amount"] = change
+                greatest_decrease["amount"] = change
+                greatest_increase["date"] = row[0]
+                greatest_decrease["date"] = row[0]
+                first_row = False
             
             # Check if this change is the greatest increase so far
             if change > greatest_increase["amount"]:
@@ -54,7 +61,7 @@ with open(csvpath, mode='r') as file:
         previous_value = current_value
 
 # Calculate the average change in "Profit/Losses"
-average_change = sum(changes) / len(changes)
+average_change = sum(changes) / len(changes) if changes else 0
 
 # Format the results
 output = (
